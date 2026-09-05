@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { MulterError } from 'multer';
 import mongoose from 'mongoose';
 import { ZodError } from 'zod';
 
@@ -26,6 +27,11 @@ function normalize(error: unknown): ApiError {
 
   if (error instanceof mongoose.Error.CastError) {
     return ApiError.badRequest(`Invalid value for "${error.path}"`);
+  }
+
+  // e.g. an uploaded recording over the size limit — a client mistake, not a server fault.
+  if (error instanceof MulterError) {
+    return ApiError.badRequest(error.message);
   }
 
   // Duplicate key violation on a unique index.

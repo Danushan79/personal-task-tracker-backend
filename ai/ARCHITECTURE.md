@@ -68,6 +68,7 @@ src/
 │   ├── auth.validator.ts
 │   ├── category.validator.ts
 │   ├── task.validator.ts
+│   ├── voice.validator.ts          [D-014] parseTaskSchema
 │   └── common.ts                   objectId, pagination, isoDate primitives
 ├── services/
 │   ├── auth.service.ts
@@ -76,20 +77,23 @@ src/
 │   ├── task.service.ts
 │   ├── task.serializer.ts          isOverdue, lateCompletion
 │   ├── recurrence.service.ts       next-occurrence arithmetic
-│   └── dashboard.service.ts
+│   ├── dashboard.service.ts
+│   └── voice.service.ts            [D-014] Whisper transcription + GPT task-draft parsing
 ├── controllers/
 │   ├── health.controller.ts        [exists]
 │   ├── auth.controller.ts
 │   ├── category.controller.ts
 │   ├── task.controller.ts
-│   └── dashboard.controller.ts
+│   ├── dashboard.controller.ts
+│   └── voice.controller.ts         [D-014]
 ├── routes/
 │   ├── index.ts                    [exists] mount point
 │   ├── health.routes.ts            [exists]
 │   ├── auth.routes.ts
 │   ├── category.routes.ts
 │   ├── task.routes.ts
-│   └── dashboard.routes.ts
+│   ├── dashboard.routes.ts
+│   └── voice.routes.ts             [D-014] multer upload + voiceLimiter
 ├── middleware/
 │   ├── error-handler.ts            [exists]
 │   ├── not-found.ts                [exists]

@@ -7,8 +7,8 @@ import {
   paginationSchema,
 } from '@/validators/common';
 
-const prioritySchema = z.enum(['low', 'medium', 'high']);
-const recurrenceSchema = z.enum(['none', 'daily', 'weekly', 'monthly']);
+export const prioritySchema = z.enum(['low', 'medium', 'high']);
+export const recurrenceSchema = z.enum(['none', 'daily', 'weekly', 'monthly']);
 
 export const taskIdParamsSchema = z.object({
   id: objectIdSchema,

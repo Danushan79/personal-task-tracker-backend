@@ -55,6 +55,22 @@ export function createGlobalLimiter(overrides: LimiterOverrides = {}) {
   });
 }
 
+/**
+ * Voice endpoints call a paid third-party API per request — a tighter, per-user budget
+ * than the global limiter, independent of it (mounted instead of, not alongside).
+ */
+export function createVoiceLimiter(overrides: LimiterOverrides = {}) {
+  return rateLimit({
+    windowMs: FIFTEEN_MINUTES_MS,
+    limit: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: Request) => req.user?.id ?? ipKeyGenerator(req.ip ?? ''),
+    ...overrides,
+  });
+}
+
 export const authLimiter = createAuthLimiter(withTestBypass());
 export const refreshLimiter = createRefreshLimiter(withTestBypass());
 export const globalLimiter = createGlobalLimiter(withTestBypass());
+export const voiceLimiter = createVoiceLimiter(withTestBypass());

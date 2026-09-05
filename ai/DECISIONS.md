@@ -240,3 +240,45 @@ render order and omitting empty ones moves ordering and empty-state logic out of
 
 **Cost:** one non-obvious aggregation to maintain, and a response shape coupled to one
 screen. Accepted — it is the highest-traffic screen in the product.
+
+---
+
+## D-014 — Voice goes live: server-side Whisper + GPT, behind two new endpoints
+**2026-09-05 · Accepted · supersedes the "no server" clause of D-013**
+
+**Decision:** the owner's real voice implementation calls OpenAI from **this backend**,
+not from the mobile client. Two new endpoints, `POST /voice/transcribe` (Whisper) and
+`POST /voice/parse-task` (GPT), both authenticated and both metered by their own rate
+limiter (`voiceLimiter`, 30/15min/user — see `middleware/rate-limit.ts`). One
+`OPENAI_API_KEY` backs both calls. Full request/response shapes: `API_CONTRACT.md` §6.
+
+**Why a backend proxy instead of calling OpenAI from the app:** an Expo client-side key
+(`EXPO_PUBLIC_OPENAI_API_KEY`) ships inside the JS bundle — anyone who downloads the APK
+can extract it and run it up on the owner's account. D-013 itself flagged this exact
+possibility ("should the owner's implementation... need a server... that is a new
+decision"). Proxying through the backend keeps the key server-side only, the same posture
+this codebase already takes with JWTs (NFR-8), and lets `parse-task` do the category
+matching against the caller's *real* categories (`Category.find({ userId })`) — the model
+can't see, let alone name, another user's data.
+
+**Why the scope grew past "just transcribe it":** the owner's actual ask was the whole
+loop — speech -> text -> a filled-in task draft the user reviews before saving, not just
+text into the title field the mobile mock/UI originally targeted (D-M11 in the mobile
+repo). `parse-task` is a second OpenAI call (GPT, not Whisper) that takes the transcript
+plus the caller's categories and today's date (in their `X-Timezone`) and returns a task
+draft in the same shape `POST /tasks` accepts.
+
+**Trust boundary:** the model's output is never passed straight through. `voice.service.ts`
+re-validates every field against the same rules `task.validator.ts` already enforces —
+`dueDate`/`dueTime` against the same regexes, `categoryId` against the literal list of ids
+just given to the model (via a dynamic Zod enum, so the model structurally cannot name a
+category it wasn't shown), `priority`/`recurrence` against the same enums. Anything that
+doesn't validate falls back to `null` or a safe default rather than reaching the client.
+
+**Cost control:** the dedicated `voiceLimiter` exists because these two endpoints are the
+only ones in the API that spend real money per call — the existing `globalLimiter`'s
+300/15min budget is calibrated for free reads and writes, not paid third-party calls.
+
+**Superseded text from D-013:** "The backend does no voice work" and "no new environment
+variables" no longer hold. Everything else in D-013 (the client-side `VoiceRecognizer`
+seam, the UI being built to spec) stands unchanged.

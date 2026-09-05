@@ -17,6 +17,9 @@ const envSchema = z
     JWT_ACCESS_TTL: z.string().default('15m'),
     JWT_REFRESH_TTL: z.string().default('30d'),
     BCRYPT_ROUNDS: z.coerce.number().int().positive().default(12),
+    OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY is required'),
+    OPENAI_TRANSCRIBE_MODEL: z.string().default('whisper-1'),
+    OPENAI_PARSE_MODEL: z.string().default('gpt-4o-mini'),
   })
   .refine((data) => data.JWT_ACCESS_SECRET !== data.JWT_REFRESH_SECRET, {
     message: 'JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must differ',

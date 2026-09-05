@@ -480,19 +480,70 @@ above 11 rows. `generatedAt` makes the snapshot explicit.
 
 ---
 
-## 6. Rate limits
+## 6. Voice
+
+Backs the Create Task mic (FR-5). Both endpoints call OpenAI server-side — the API key
+never reaches the client. See `ai/DECISIONS.md` D-014 for why this replaced the
+`VoiceRecognizer` mock.
+
+### `POST /voice/transcribe` — 200 — authenticated
+
+`multipart/form-data` with one field, `audio` (the recorded clip — `.m4a`/`.wav`/`.webm`,
+max 15MB). Returns:
+
+```json
+{ "text": "Call the dentist tomorrow at 3pm, it's pretty urgent" }
+```
+
+- **400** if no `audio` field, the file isn't `audio/*`, or it exceeds the size limit.
+- **422** if Whisper returned an empty transcript ("didn't catch that").
+
+### `POST /voice/parse-task` — 200 — authenticated
+
+```json
+{ "text": "Call the dentist tomorrow at 3pm, it's pretty urgent" }
+```
+
+Sends `text` plus the caller's own categories and today's date (resolved in the
+`X-Timezone` header's zone) to an LLM, and returns a task draft in the same shapes
+`POST /tasks` accepts:
+
+```json
+{
+  "title": "Call the dentist",
+  "description": null,
+  "categoryId": "64f0c8f1a1b2c3d4e5f6a7b8",
+  "dueDate": "2026-09-06",
+  "dueTime": "15:00",
+  "recurrence": "none",
+  "priority": "high"
+}
+```
+
+- `categoryId` is either one of the caller's own category ids or `null` — never a category
+  belonging to someone else, and never a value the model invented.
+- `dueDate`/`dueTime` are re-validated server-side against the same format the rest of the
+  API uses; anything the model returns outside that format comes back as `null` rather than
+  being passed through.
+- The client only ever uses this to **pre-fill** the Create Task form — nothing here
+  creates or modifies a task. The user still reviews and calls `POST /tasks` themselves.
+
+---
+
+## 7. Rate limits
 
 | Routes | Limit |
 | ------ | ----- |
 | `POST /auth/login`, `/auth/register`, `/auth/forgot-password` | 10 per 15 min per IP |
 | `POST /auth/refresh` | 60 per 15 min per IP |
+| `POST /voice/transcribe`, `/voice/parse-task` | 30 per 15 min per authenticated user |
 | Everything else | 300 per 15 min per authenticated user |
 
 Exceeding a limit returns **429** with the standard error envelope and a `Retry-After` header.
 
 ---
 
-## 7. Endpoint summary
+## 8. Endpoint summary
 
 | Method | Path | Auth | Serves |
 | ------ | ---- | ---- | ------ |
@@ -518,5 +569,7 @@ Exceeding a limit returns **429** with the standard error envelope and a `Retry-
 | POST | `/tasks/:id/reopen` | yes | FR-3.13 |
 | POST | `/tasks/:id/reschedule` | yes | FR-3.12, gap G6 |
 | GET | `/dashboard/summary` | yes | FR-4.1–4.4 |
+| POST | `/voice/transcribe` | yes | FR-5.2–5.4 |
+| POST | `/voice/parse-task` | yes | FR-5.4 (extended — full-form autofill, D-014) |
 
-23 endpoints. Every one traces to a requirement; no requirement lacks an endpoint.
+25 endpoints. Every one traces to a requirement; no requirement lacks an endpoint.

@@ -1,4 +1,4 @@
-import { addDays, addMonths, differenceInCalendarDays } from 'date-fns';
+import { addDays, addMonths, differenceInCalendarDays, format } from 'date-fns';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 
 /**
@@ -73,6 +73,12 @@ export function composeDueAt(
 
   const local = new Date(year, month - 1, day, hours, minutes, 0, 0);
   return { dueAt: fromZonedTime(local, tz), hasTime: true };
+}
+
+/** Today's calendar date in `tz`, as `YYYY-MM-DD` plus its weekday name — for prompts that need to resolve relative dates ("tomorrow", "next Friday") against the user's own today. */
+export function todayInTz(tz: string, now: Date = new Date()): { date: string; weekday: string } {
+  const zoned = toZonedTime(now, tz);
+  return { date: format(zoned, 'yyyy-MM-dd'), weekday: format(zoned, 'EEEE') };
 }
 
 /**
