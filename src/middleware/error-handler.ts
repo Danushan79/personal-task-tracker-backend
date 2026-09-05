@@ -42,16 +42,16 @@ function normalize(error: unknown): ApiError {
  */
 export function errorHandler(
   error: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
   const apiError = normalize(error);
 
   if (apiError.statusCode >= 500) {
-    logger.error(apiError.message, error);
+    logger.error(`[${req.id}] ${apiError.message}`, error);
   } else {
-    logger.warn(`${apiError.statusCode} ${apiError.message}`);
+    logger.warn(`[${req.id}] ${apiError.statusCode} ${apiError.message}`);
   }
 
   const body: ErrorBody = {

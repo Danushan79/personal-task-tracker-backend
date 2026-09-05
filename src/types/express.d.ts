@@ -3,6 +3,8 @@ import 'express';
 declare global {
   namespace Express {
     interface Request {
+      /** Set by `requestId`. Correlates log lines and error responses to one request. */
+      id: string;
       /** Set by `authenticate`. Absent on unauthenticated routes. */
       user?: { id: string };
       /** Set by `timezone` middleware from `X-Timezone`. Falls back to `UTC`. */
