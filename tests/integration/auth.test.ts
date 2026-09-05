@@ -175,7 +175,7 @@ describe('auth', () => {
     expect((res.body as MessageResponseBody).message).toEqual(expect.any(String));
   });
 
-  it('seeds exactly the 4 default categories on register', async () => {
+  it('starts a new user with no categories', async () => {
     const session = await authFor(app);
 
     const res = await request(app)
@@ -184,7 +184,6 @@ describe('auth', () => {
 
     expect(res.status).toBe(200);
     const body = res.body as CategoryListResponseBody;
-    expect(body.items).toHaveLength(4);
-    expect(body.items.map((c) => c.name).sort()).toEqual(['Errands', 'Health', 'Personal', 'Work'].sort());
+    expect(body.items).toHaveLength(0);
   });
 });

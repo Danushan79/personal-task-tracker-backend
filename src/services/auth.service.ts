@@ -1,5 +1,4 @@
 import type { CategoryColor, CategoryIcon } from '@/constants/taxonomy';
-import { Category } from '@/models/category.model';
 import { User, type UserDocument } from '@/models/user.model';
 import * as tokenService from '@/services/token.service';
 import { ApiError } from '@/utils/api-error';
@@ -16,10 +15,7 @@ import type {
 
 const INVALID_CREDENTIALS = 'Invalid email or password';
 
-/**
- * Seeded for every new user so the Create Task pill row (FR-3.3) is never empty on first
- * run (`API_CONTRACT.md` §2 register).
- */
+/** Used by the `npm run seed` dev fixture (`src/scripts/seed.ts`) — not seeded on register. */
 export const DEFAULT_CATEGORIES: ReadonlyArray<{
   name: string;
   icon: CategoryIcon;
@@ -82,10 +78,6 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
     if (isDuplicateKeyError(error)) throw ApiError.conflict('Email already registered');
     throw error;
   }
-
-  await Category.insertMany(
-    DEFAULT_CATEGORIES.map((category) => ({ userId: user._id, ...category })),
-  );
 
   return issueSession(user);
 }

@@ -59,12 +59,12 @@ describe('categories', () => {
     expect(afterDelete.status).toBe(404);
   });
 
-  it('lists the 4 seeded categories by default', async () => {
+  it('starts a new user with no categories', async () => {
     const session = await authFor(app);
 
     const res = await request(app).get('/api/v1/categories').set(auth(session.accessToken));
     expect(res.status).toBe(200);
-    expect((res.body as CategoryListBody).total).toBe(4);
+    expect((res.body as CategoryListBody).total).toBe(0);
   });
 
   it('rejects a duplicate name case-insensitively with 409', async () => {

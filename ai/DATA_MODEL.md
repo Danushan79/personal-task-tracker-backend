@@ -201,10 +201,10 @@ tasks pointing at a category that no longer exists.
 
 ## Seeding
 
-`POST /auth/register` seeds four categories — Work, Personal, Health, Errands — with the
-icons and colours listed in `API_CONTRACT.md`. Without them the Create Task pill row
-(FR-3.3) is empty on first run, and the first thing a new user meets is a dead end.
+`POST /auth/register` creates no categories — a new user starts with zero, and the Create
+Task pill row (FR-3.3) shows its "+ New" affordance until they add their own.
 
 A separate `npm run seed` script (task B6.4) fills a dev account with tasks spread across
 today / upcoming / overdue, matching the dashboard mock's 12 / 28 / 3 so the UI can be
-checked against the design.
+checked against the design. It still seeds the 4 sample categories (`DEFAULT_CATEGORIES`
+in `src/services/auth.service.ts`) so those tasks have something to attach to.

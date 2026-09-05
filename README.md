@@ -135,8 +135,7 @@ Access is a short-lived JWT; sessions survive app restarts via a rotating refres
    gets 401.
 4. `POST /auth/logout` revokes the current refresh token (idempotent).
 
-Registering also seeds 4 default categories (Work, Personal, Health, Errands) so the
-Create Task flow is never empty on first run.
+A new user starts with zero categories.
 
 ## API
 
@@ -151,7 +150,7 @@ Routes that bucket by day (`GET /tasks?bucket=`, `GET /dashboard/summary`) honou
 | Method | Path                        | Auth | Notes                                                    |
 | ------ | --------------------------- | ---- | --------------------------------------------------------- |
 | GET    | `/health`                   | no   | Liveness + database status (503 if degraded)               |
-| POST   | `/auth/register`            | no   | 201; seeds 4 default categories                            |
+| POST   | `/auth/register`            | no   | 201; new user starts with 0 categories                     |
 | POST   | `/auth/login`                | no   | 200; same failure message for wrong password/unknown email |
 | POST   | `/auth/refresh`               | no   | 200; rotates the refresh token                              |
 | POST   | `/auth/logout`                | yes  | 204; idempotent                                             |

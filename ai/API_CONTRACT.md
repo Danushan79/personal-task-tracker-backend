@@ -124,17 +124,8 @@ Already implemented. No auth.
 
 **409** if the email is already registered — message `"Email already registered"`.
 
-**Side effect:** four default categories are seeded for the new user, so the Create Task
-pill row (FR-3.3) is never empty on first run:
-
-| Name | Icon | Colour |
-| ---- | ---- | ------ |
-| Work | `work` | `#0058bd` |
-| Personal | `home` | `#8e24aa` |
-| Health | `favorite` | `#ba1a1a` |
-| Errands | `shopping_cart` | `#e64a19` |
-
-These four names come straight from the designs (`create_task` pills, `task_categories` rows).
+A new user starts with zero categories — the client renders the FR-3.3 pill row's empty
+state until the user creates their own.
 
 ### `POST /auth/login` — 200
 
