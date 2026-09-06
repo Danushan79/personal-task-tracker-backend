@@ -8,6 +8,7 @@ import { isoDateSchema, isoTimeSchema } from '@/validators/common';
 import { prioritySchema, recurrenceSchema } from '@/validators/task.validator';
 import { ApiError } from '@/utils/api-error';
 import { todayInTz } from '@/utils/date';
+import { logger } from '@/utils/logger';
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
@@ -30,7 +31,10 @@ export async function transcribeAudio(buffer: Buffer, mimetype: string): Promise
       file,
       model: env.OPENAI_TRANSCRIBE_MODEL,
     });
-  } catch {
+  } catch (error) {
+    // The wrapped ApiError below never carries `error` itself, so without this log line
+    // the real OpenAI SDK failure (bad key, quota, unsupported format, ...) is unrecoverable.
+    logger.error('Whisper transcription call failed', error);
     throw ApiError.internal('Voice transcription is temporarily unavailable. Please try again.');
   }
 
@@ -109,7 +113,8 @@ export async function parseTaskFromText(
       ),
     });
     parsed = completion.choices[0]?.message.parsed ?? null;
-  } catch {
+  } catch (error) {
+    logger.error('GPT task-parse call failed', error);
     throw ApiError.internal('Filling in your task is temporarily unavailable. Please try again.');
   }
 
